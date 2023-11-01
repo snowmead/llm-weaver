@@ -78,6 +78,8 @@ pub trait TapestryChestHandler<T: Config> {
 		tapestry_id: TID,
 		instance: Option<u64>,
 	) -> crate::Result<Option<M>>;
+	/// Deletes a tapestry fragment.
+	async fn delete_tapestry_fragment<TID: TapestryId>(tapestry_id: TID) -> crate::Result<()>;
 }
 
 /// Default implementation of [`Config::TapestryChest`]
@@ -269,6 +271,23 @@ impl<T: Config> TapestryChestHandler<T> for TapestryChest {
 		})?;
 
 		Ok(Some(tapestry_metadata))
+	}
+
+	async fn delete_tapestry_fragment<TID: TapestryId>(tapestry_id: TID) -> crate::Result<()> {
+		let client = get_client().await.expect("Failed to get redis client");
+		let mut con = client.get_async_connection().await.expect("Failed to get redis connection");
+		debug!("Connected to Redis");
+
+		let tapestry_id = &tapestry_id.base_key();
+
+		con.del(tapestry_id).await.map_err(|e| {
+			error!("Failed to delete {} tapestry_id: {}", tapestry_id, e);
+			LoomError::from(StorageError::Redis(e))
+		})?;
+
+		debug!("Deleted {} tapestry_id", tapestry_id);
+
+		Ok(())
 	}
 }
 

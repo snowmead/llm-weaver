@@ -14,7 +14,7 @@ pub type F32 = f32;
 
 pub const SYSTEM_ROLE: &str = "system";
 pub const ASSISTANT_ROLE: &str = "assistant";
-const USER_ROLE: &str = "user";
+pub const USER_ROLE: &str = "user";
 const FUNCTION_ROLE: &str = "function";
 
 /// Wrapped [`Role`] for custom implementations.
@@ -26,6 +26,14 @@ pub enum WrapperRole {
 impl Default for WrapperRole {
 	fn default() -> Self {
 		Self::Role(Role::User)
+	}
+}
+
+impl Display for WrapperRole {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Role(role) => write!(f, "{}", role),
+		}
 	}
 }
 
